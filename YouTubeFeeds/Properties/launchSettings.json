@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "YouTubeFeeds": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7777",
+      "launchBrowser": false
+    }
+  }
+}
