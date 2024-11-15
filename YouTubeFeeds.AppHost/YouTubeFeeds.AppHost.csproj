@@ -14,9 +14,11 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
     <PackageReference Include="Aspire.Hosting.Azure.Functions" Version="9.0.0-preview.5.24551.3" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\YouTubeFeeds.Common\YouTubeFeeds.Common.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\YouTubeFeeds\YouTubeFeeds.csproj" />
   </ItemGroup>
 

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using YoutubeExplode;
 using YoutubeExplode.Channels;
@@ -12,9 +13,11 @@ using YoutubeExplode.Videos.Streams;
 
 namespace YouTubeFeeds;
 
-public class Functions(ILogger<Functions> logger)
+public class Functions(HybridCache cache, ILogger<Functions> logger)
 {
     private readonly YoutubeClient _youtubeClient = new();
+
+    private readonly HybridCache _cache = cache;
 
     private readonly ILogger<Functions> _logger = logger;
 
@@ -146,42 +149,44 @@ public class Functions(ILogger<Functions> logger)
         }
     }
 
-    private async Task<Channel?> GetYouTubeChannelAsync(string channelIdentifier)
-    {
-        if (channelIdentifier.StartsWith(Constants.YouTubeChannelIdPrefix))
-        {
-            try
+    private async Task<Channel?> GetYouTubeChannelAsync(string channelIdentifier) =>
+        await _cache.GetOrCreateAsync($"channel-{channelIdentifier}", async cancellationToken =>
             {
-                // Channel ID
-                return await _youtubeClient.Channels.GetAsync(channelIdentifier);
-            }
-            catch { }
-        }
-        else
-        {
-            try
-            {
-                // User handle
-                return await _youtubeClient.Channels.GetByHandleAsync(channelIdentifier);
-            }
-            catch { }
+                if (channelIdentifier.StartsWith(Constants.YouTubeChannelIdPrefix))
+                {
+                    try
+                    {
+                        // Channel ID
+                        return await _youtubeClient.Channels.GetAsync(channelIdentifier, cancellationToken);
+                    }
+                    catch { }
+                }
+                else
+                {
+                    try
+                    {
+                        // User handle
+                        return await _youtubeClient.Channels.GetByHandleAsync(channelIdentifier, cancellationToken);
+                    }
+                    catch { }
 
-            try
-            {
-                // User ID
-                return await _youtubeClient.Channels.GetByUserAsync(channelIdentifier);
-            }
-            catch { }
+                    try
+                    {
+                        // User ID
+                        return await _youtubeClient.Channels.GetByUserAsync(channelIdentifier, cancellationToken);
+                    }
+                    catch { }
 
-            try
-            {
-                // User Slug
-                return await _youtubeClient.Channels.GetBySlugAsync(channelIdentifier);
-            }
-            catch { }
-        }
+                    try
+                    {
+                        // User Slug
+                        return await _youtubeClient.Channels.GetBySlugAsync(channelIdentifier, cancellationToken);
+                    }
+                    catch { }
+                }
 
-        _logger.LogError("Channel not found: {ChannelIdentifier}", channelIdentifier);
-        return null;
-    }
+                _logger.LogError("Channel not found: {ChannelIdentifier}", channelIdentifier);
+                return null;
+            }
+        );
 }
