@@ -9,5 +9,6 @@ builder.AddServiceDefaults();
 builder.ConfigureFunctionsWebApplication();
 
 builder.Services.AddCaching(builder.Configuration);
+builder.Services.AddYouTubeFeedsServices();
 
 builder.Build().Run();

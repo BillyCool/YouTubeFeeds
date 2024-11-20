@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using YouTubeFeeds.Common;
 using YouTubeFeeds.Common.Settings;
+using YouTubeFeeds.Repository;
 
 namespace YouTubeFeeds;
 
@@ -31,5 +32,10 @@ public static class ServiceExtensions
             };
         });
 #pragma warning restore EXTEXP0018
+    }
+
+    public static void AddYouTubeFeedsServices(this IServiceCollection services)
+    {
+        services.AddScoped<IYoutubeFeedsRepository, YoutubeFeedsRepository>();
     }
 }
